@@ -120,7 +120,7 @@ const generateMessage = (body: Body, event: string) => {
 
 app.use(express.json())
 
-app.post('/send', async (req, res)=>{
+app.post('/', async (req, res)=>{
     try { //https://chat.googleapis.com/v1/spaces/AAAAb3i9pAw/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=kOSjPJdKYaXr4RMY-mmNltGHCs4B2ZMovxQ7yX9V_WY%3D
         if (!req.query.url) throw `Please specify a URL to send to`;
         const url: string = `${req.query.url as string}&token=${req.query.token}`
