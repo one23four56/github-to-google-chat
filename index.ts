@@ -2,7 +2,6 @@ import express = require('express');
 import fetch from 'node-fetch';
 import { Body } from './github-format';
 import * as gformat from './gchat-format';
-import { wrap } from 'node:module';
 const app = express();
 
 const generateMessage = (body: Body, event: string) => {
@@ -121,7 +120,7 @@ const generateMessage = (body: Body, event: string) => {
 app.use(express.json())
 
 app.post('/', async (req, res)=>{
-    try { //https://chat.googleapis.com/v1/spaces/AAAAb3i9pAw/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=kOSjPJdKYaXr4RMY-mmNltGHCs4B2ZMovxQ7yX9V_WY%3D
+    try { 
         if (!req.query.url) throw `Please specify a URL to send to`;
         const url: string = `${req.query.url as string}&token=${req.query.token}`
         const tstping = await fetch(url)
