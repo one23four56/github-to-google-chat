@@ -3,6 +3,6 @@
         { "src": "index.ts", "use": "@vercel/node" }
     ],
     "routes": [
-        { "src": "/.*", "methods": ["POST"], "dest" : "index.js"}
+        { "src": "*", "methods": ["POST"], "dest" : "index.js"}
     ]
 }
