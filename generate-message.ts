@@ -76,6 +76,35 @@ const makeRepoInfo = (body: PushBody | Body | PRBody): gformat.Section => {
 }
 /**
  * 
+ * @param body A Body or PushBody to generate a compact repoinfo for
+ * @returns A compact repoinfo section
+ */
+const makeCompactRepoInfo = (body: PushBody | Body | PRBody): gformat.Section => {
+    return {
+        widgets: [
+            {
+                keyValue: {
+                    topLabel: body.repository.name,
+                    content: `${body.repository.open_issues_count} open issue${(body.repository.open_issues_count===0||body.repository.open_issues_count>1)?'s':''}, ${body.repository.forks_count} fork${(body.repository.forks_count===0||body.repository.forks_count>1)?'s':''}`,
+                    bottomLabel: `${body.repository.watchers_count} watcher${(body.repository.watchers_count===0||body.repository.watchers_count>1)?'s':''}, ${body.repository.stargazers_count} stargazer${(body.repository.stargazers_count===0||body.repository.stargazers_count>1)?'s':''}`,
+                    icon: 'MEMBERSHIP',
+                    button: {
+                        textButton: {
+                            text: 'Open Repo',
+                            onClick: {
+                                openLink: {
+                                    url: body.repository.html_url
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}
+/**
+ * 
  * @param body A Body to make basic event info for
  * @param event The event to make the basic event info for
  * @returns A basic event info section
@@ -307,7 +336,7 @@ export const generatePushMessage = (body: PushBody) => {
             {
                 header: makeHeader(body), 
                 sections: [
-                    makeRepoInfo(body),
+                    makeCompactRepoInfo(body),
                     makePushEventInfo(body)
                 ]
             }
@@ -335,7 +364,7 @@ export const generatePRMessage = (body: PRBody) => {
              {
                  header: makeHeader(body),
                  sections: [
-                     makeRepoInfo(body),
+                     makeCompactRepoInfo(body),
                      makePREventInfo(body)
                  ]
              }
