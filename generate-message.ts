@@ -145,7 +145,7 @@ const makePushEventInfo = (body: PushBody): gformat.Section => {
             },
             {
                 textParagraph: {
-                    text: `<b>${body.head_commit.added.length}</b> added, <b>${body.head_commit.modified.length}</b> modified, <b>${body.head_commit.removed.length}</b> removed in head commit`
+                    text: `<b>${body.head_commit.added.length}</b> added, <b>${body.head_commit.modified.length}</b> modified, <b>${body.head_commit.removed.length}</b> removed (in head commit)`
                 }
             },
             {
@@ -161,6 +161,26 @@ const makePushEventInfo = (body: PushBody): gformat.Section => {
                             onClick: {
                                 openLink: {
                                     url: body.compare
+                                }
+                            }
+                        }
+                    },
+                    {
+                        imageButton: {
+                            iconUrl: body.sender.avatar_url,
+                            onClick: {
+                                openLink: {
+                                    url: body.sender.html_url
+                                }
+                            }
+                        }
+                    },
+                    {
+                        imageButton: {
+                            icon: 'MEMBERSHIP',
+                            onClick: {
+                                openLink: {
+                                    url: body.repository.url
                                 }
                             }
                         }

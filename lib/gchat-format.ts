@@ -32,11 +32,18 @@ export interface TextParagraph {
 }
 
 export interface Button {
-  textButton: TextButton;
+  textButton?: TextButton;
+  imageButton?: ImageButton;
 }
 
 export interface TextButton {
   text: string;
+  onClick: OnClick;
+}
+
+export interface ImageButton {
+  icon?: string; 
+  iconUrl?: string;
   onClick: OnClick;
 }
 
