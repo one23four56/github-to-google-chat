@@ -3,3 +3,4 @@ github-format.js
 index.js
 generate-message.js
 github-push-format.js
+github-pr-format.js

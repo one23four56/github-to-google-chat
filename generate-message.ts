@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import { Body } from './lib/github-format';
 import { PushBody } from './lib/github-push-format';
+import { PRBody } from './lib/github-pr-format'
 import * as gformat from './lib/gchat-format';
 
 /**
@@ -8,7 +9,7 @@ import * as gformat from './lib/gchat-format';
  * @param body A Body or PushBody to generate a header for
  * @returns A header 
  */
-const makeHeader = (body: PushBody | Body): gformat.Header => {
+const makeHeader = (body: PushBody | Body | PRBody): gformat.Header => {
     return {
         title: `GitHub Update`,
         subtitle: `For ${body.repository.full_name}`,
@@ -20,7 +21,7 @@ const makeHeader = (body: PushBody | Body): gformat.Header => {
  * @param body A Body or PushBody to generate a repoinfo for
  * @returns A repoinfo section
  */
-const makeRepoInfo = (body: PushBody |Body): gformat.Section => {
+const makeRepoInfo = (body: PushBody | Body | PRBody): gformat.Section => {
     return {
         widgets: [
             {
@@ -52,6 +53,35 @@ const makeRepoInfo = (body: PushBody |Body): gformat.Section => {
                     text: `<b>${body.repository.name}:</b><br>'${body.repository.description}'<br>Written in <u>${body.repository.language}</u>`
                 }
             },
+            {
+                keyValue: {
+                    topLabel: body.repository.name,
+                    content: `${body.repository.open_issues_count} open issue${(body.repository.open_issues_count===0||body.repository.open_issues_count>1)?'s':''}, ${body.repository.forks_count} fork${(body.repository.forks_count===0||body.repository.forks_count>1)?'s':''}`,
+                    bottomLabel: `${body.repository.watchers_count} watcher${(body.repository.watchers_count===0||body.repository.watchers_count>1)?'s':''}, ${body.repository.stargazers_count} stargazer${(body.repository.stargazers_count===0||body.repository.stargazers_count>1)?'s':''}`,
+                    icon: 'MEMBERSHIP',
+                    button: {
+                        textButton: {
+                            text: 'Open Repo',
+                            onClick: {
+                                openLink: {
+                                    url: body.repository.html_url
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}
+/**
+ * 
+ * @param body A Body or PushBody to generate a compact repoinfo for
+ * @returns A compact repoinfo section
+ */
+const makeCompactRepoInfo = (body: PushBody | Body | PRBody): gformat.Section => {
+    return {
+        widgets: [
             {
                 keyValue: {
                     topLabel: body.repository.name,
@@ -192,6 +222,83 @@ const makePushEventInfo = (body: PushBody): gformat.Section => {
 }
 /**
  * 
+ * @param body A PRBody to generate a section for 
+ * @returns A section
+ */
+const makePREventInfo = (body: PRBody): gformat.Section => {
+    return {
+        widgets: [
+            {
+                textParagraph: {
+                    text: `Pull request <b>#${body.pull_request.number}</b> was <b>${body.action}</b> by <b>${body.sender.login}</b>`
+                }
+            },
+            {
+                keyValue: {
+                    topLabel: `Pull Request #${body.pull_request.number}`,
+                    content: body.pull_request.title,
+                    bottomLabel: `By ${body.pull_request.user.login}`,
+                    button: {
+                        textButton: {
+                            text: 'View Pull Request',
+                            onClick: {
+                                openLink: {
+                                    url: body.pull_request.html_url
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                textParagraph: {
+                    text: `Pull request overview:<br><b>${body.pull_request.base.label} <- ${body.pull_request.head.label}</b>`
+                }
+            },
+            {
+                textParagraph: {
+                    text: `Changes:<br><b>${body.pull_request.commits}</b> commit${(body.pull_request.commits===0||body.pull_request.commits>1)?'s':''}<br><b>${body.pull_request.changed_files}</b> file${(body.pull_request.changed_files===0||body.pull_request.changed_files>1)?'s':''} changed<br><b>${body.pull_request.comments}</b> comment${(body.pull_request.comments===0||body.pull_request.comments>1)?'s':''}`
+                }
+            },
+            {
+                buttons: [
+                    {
+                        textButton: {
+                            text: 'View Diff',
+                            onClick: {
+                                openLink: {
+                                    url: body.pull_request.diff_url
+                                }
+                            }
+                        }
+                    },
+                    {
+                        imageButton: {
+                            iconUrl: body.sender.avatar_url,
+                            onClick: {
+                                openLink: {
+                                    url: body.sender.html_url
+                                }
+                            }
+                        }
+                    },
+                    {
+                        imageButton: {
+                            icon: 'MEMBERSHIP',
+                            onClick: {
+                                openLink: {
+                                    url: body.repository.html_url
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
+/**
+ * 
  * @param body A body to generate the default message for 
  * @param event The event that triggered the message
  * @returns An async function that sends the message
@@ -229,11 +336,39 @@ export const generatePushMessage = (body: PushBody) => {
             {
                 header: makeHeader(body), 
                 sections: [
-                    makeRepoInfo(body),
+                    makeCompactRepoInfo(body),
                     makePushEventInfo(body)
                 ]
             }
         ]
+    }
+    return async (url: string) => {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=UTF-8'
+            },
+            body: JSON.stringify(msg)
+        });
+        return res;
+    }
+}
+/**
+ * 
+ * @param body A body to generate a pull request message for
+ * @returns An async function that sends the message
+ */
+export const generatePRMessage = (body: PRBody) => {
+    const msg: gformat.CardMessage = {
+         cards: [
+             {
+                 header: makeHeader(body),
+                 sections: [
+                     makeCompactRepoInfo(body),
+                     makePREventInfo(body)
+                 ]
+             }
+         ]
     }
     return async (url: string) => {
         const res = await fetch(url, {

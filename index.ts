@@ -1,6 +1,6 @@
 import express = require('express');
 import fetch from 'node-fetch';
-import { generateDefaultMessage, generatePushMessage } from './generate-message'
+import * as msg from './generate-message'
 const app = express();
 
 
@@ -14,7 +14,18 @@ app.post('/', async (req, res)=>{
         const tstping = await fetch(url)
         if (tstping.status!==401) throw `Invalid URL: Expected test ping response of 401, got ${tstping.status}`;
         const event = req.header("X-GitHub-Event");
-        const sendMessage = event==="push"?generatePushMessage(req.body):generateDefaultMessage(req.body, event)
+        let sendMessage;
+        switch (event) {
+            case "push":
+                sendMessage = msg.generatePushMessage(req.body)
+                break;
+            case "pull_request":
+                sendMessage = msg.generatePRMessage(req.body)
+                break;
+            default:
+                sendMessage = msg.generateDefaultMessage(req.body, event)
+                break;
+        }
         const whres = await sendMessage(url);
         res.status(whres.status).send(`URL: ${whres.url} \n Repsonse: ${whres.status}: ${whres.statusText} \n Response Body: ${whres.body.read()}`)
     } catch (error) {
