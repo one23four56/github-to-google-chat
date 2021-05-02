@@ -21,13 +21,16 @@ First, you need to get a webhook URL from google chat, which can be done with th
 
 1. Open the page for the repo you want to link to google chat, and open the settings tab.
 3. Click on 'Webhooks' on the sidebar to the left
-4. Click 'Add Webhook' (to the right)   ![image](https://user-images.githubusercontent.com/72141247/116796175-2eb47600-aaa0-11eb-9d36-61698e3236ae.png)
+4. Click 'Add Webhook' (to the right)   
+![image](https://user-images.githubusercontent.com/72141247/116796175-2eb47600-aaa0-11eb-9d36-61698e3236ae.png)
 5. Under payload url, type `https://github-to-google-chat.vercel.app/?url=`
 6. Paste in the Webhook url from google chat, so the payload URL looks like this:  
 `https://github-to-google-chat.vercel.app/?url={Google Chat Webhook URL}`
-7. Set the content type to `application/json`   ![image](https://user-images.githubusercontent.com/72141247/116796203-68857c80-aaa0-11eb-8b26-470783c99324.png)
-8. Choose the events you would like to be notified about, and then click 'Add Webhook'
+7. Set the content type to `application/json`   
+![image](https://user-images.githubusercontent.com/72141247/116796203-68857c80-aaa0-11eb-8b26-470783c99324.png)
+8. Choose the events you would like to be notified about, and then click 'Add Webhook'   
+**IMPORTANT NOTE:** You should probably use 'Just the push event' because the push event is the only event that there is a custom message for (so far) 
 
-If all goes well, you should see a message like this in google chat.  
+If all goes well, you should see a message like this in google chat:
 ![image](https://user-images.githubusercontent.com/72141247/116796245-97035780-aaa0-11eb-964d-92e6c96245ca.png)
 
