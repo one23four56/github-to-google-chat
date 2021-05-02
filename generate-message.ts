@@ -115,22 +115,104 @@ const makeBasicEventInfo = (body: Body, event: string): gformat.Section => {
 }
 /**
  * 
+ * @param body A PushBody to generate detailed event info for
+ * @returns A detailed event info section 
+ */
+const makePushEventInfo = (body: PushBody): gformat.Section => {
+    return {
+        widgets: [
+            {
+                textParagraph: {
+                    text: `There was a${body.forced?' <b>forced</b>':'n <b>unforced</b>'} push by <b>${body.pusher.name}</b>`
+                }
+            },
+            {
+                keyValue: {
+                    topLabel: 'Head Commit',
+                    content: body.head_commit.message, 
+                    bottomLabel: `By ${body.head_commit.committer.username} (${body.head_commit.committer.name})`,
+                    button: {
+                        textButton: {
+                            text: 'View Commit',
+                            onClick: {
+                                openLink: {
+                                    url: body.head_commit.url
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                textParagraph: {
+                    text: `<b>${body.head_commit.added.length}</b> added, <b>${body.head_commit.modified.length}</b> modified, <b>${body.head_commit.removed.length}</b> removed in head commit`
+                }
+            },
+            {
+                textParagraph: {
+                    text: `<b>${body.commits.length}</b> total commit${(body.commits.length===0||body.commits.length>1)?'s':''} in this push`
+                }
+            },
+            {
+                buttons: [
+                    {
+                        textButton: {
+                            text: 'Compare Push',
+                            onClick: {
+                                openLink: {
+                                    url: body.compare
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
+/**
+ * 
  * @param body A body to generate the default message for 
  * @param event The event that triggered the message
  * @returns An async function that sends the message
  */
 export const generateDefaultMessage = (body: Body, event: string) => {
-    const card: gformat.Card = {
-        header: makeHeader(body), 
-        sections: [
-            makeRepoInfo(body),
-            makeBasicEventInfo(body, event)
-        ]
-    }
-
     const msg: gformat.CardMessage = {
         cards: [
-            card
+            {
+                header: makeHeader(body), 
+                sections: [
+                    makeRepoInfo(body),
+                    makeBasicEventInfo(body, event)
+                ]
+            }
+        ]
+    }
+    return async (url: string) => {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=UTF-8'
+            },
+            body: JSON.stringify(msg)
+        });
+        return res;
+    }
+}
+/**
+ * @param body A body to generate the push message for
+ * @returns An async function that sends the message
+ */
+export const generatePushMessage = (body: PushBody) => {
+    const msg: gformat.CardMessage = {
+        cards: [
+            {
+                header: makeHeader(body), 
+                sections: [
+                    makeRepoInfo(body),
+                    makePushEventInfo(body)
+                ]
+            }
         ]
     }
     return async (url: string) => {
