@@ -1,7 +1,8 @@
 import fetch from 'node-fetch';
 import { Body } from './lib/github-format';
 import { PushBody } from './lib/github-push-format';
-import { PRBody } from './lib/github-pr-format'
+import { PRBody } from './lib/github-pr-format';
+import { IssueBody } from './lib/github-issue-format';
 import * as gformat from './lib/gchat-format';
 
 /**
@@ -9,7 +10,7 @@ import * as gformat from './lib/gchat-format';
  * @param body A Body or PushBody to generate a header for
  * @returns A header 
  */
-const makeHeader = (body: PushBody | Body | PRBody): gformat.Header => {
+const makeHeader = (body: PushBody | Body | PRBody | IssueBody): gformat.Header => {
     return {
         title: `GitHub Update`,
         subtitle: `For ${body.repository.full_name}`,
@@ -21,7 +22,7 @@ const makeHeader = (body: PushBody | Body | PRBody): gformat.Header => {
  * @param body A Body or PushBody to generate a repoinfo for
  * @returns A repoinfo section
  */
-const makeRepoInfo = (body: PushBody | Body | PRBody): gformat.Section => {
+const makeRepoInfo = (body: PushBody | Body | PRBody | IssueBody): gformat.Section => {
     return {
         widgets: [
             {
@@ -79,7 +80,7 @@ const makeRepoInfo = (body: PushBody | Body | PRBody): gformat.Section => {
  * @param body A Body or PushBody to generate a compact repoinfo for
  * @returns A compact repoinfo section
  */
-const makeCompactRepoInfo = (body: PushBody | Body | PRBody): gformat.Section => {
+const makeCompactRepoInfo = (body: PushBody | Body | PRBody | IssueBody): gformat.Section => {
     return {
         widgets: [
             {
@@ -299,6 +300,68 @@ const makePREventInfo = (body: PRBody): gformat.Section => {
 }
 /**
  * 
+ * @param body An issuebody to make a section for 
+ * @returns An eventinfo section for the given issuebody
+ */
+const makeIssueEventInfo = (body: IssueBody): gformat.Section => {
+    return {
+        widgets: [
+            {
+                textParagraph: {
+                    text: `Issue <b>#${body.issue.number}</b> was <b>${body.action}</b> by <b>${body.sender.login}</b>`
+                }
+            }, 
+            {
+                keyValue: {
+                    topLabel: `Issue #${body.issue.number}`,
+                    content: body.issue.title,
+                    bottomLabel: `By ${body.issue.user.login} (${body.issue.author_association})`,
+                    button: {
+                        textButton: {
+                            text: 'View Issue',
+                            onClick: {
+                                openLink: {
+                                    url: body.issue.html_url
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                textParagraph: {
+                    text: `Issue #${body.issue.number} details:<br>${body.issue.body}<br><b>${body.issue.comments}</b> comments<br>Currently <b>${body.issue.state}</b>`
+                }
+            },
+            {
+                buttons: [
+                    {
+                        imageButton: {
+                            iconUrl: body.sender.avatar_url,
+                            onClick: {
+                                openLink: {
+                                    url: body.sender.html_url
+                                }
+                            }
+                        }
+                    },
+                    {
+                        imageButton: {
+                            icon: 'MEMBERSHIP',
+                            onClick: {
+                                openLink: {
+                                    url: body.repository.html_url
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
+/**
+ * 
  * @param body A body to generate the default message for 
  * @param event The event that triggered the message
  * @returns An async function that sends the message
@@ -381,4 +444,31 @@ export const generatePRMessage = (body: PRBody) => {
         return res;
     }
 }
-
+/**
+ * 
+ * @param body A body generate a pull request message for
+ * @returns An async function that sends that message
+ */
+export const generateIssueMessage = (body: IssueBody) => {
+    const msg: gformat.CardMessage = {
+        cards: [
+            {
+                header: makeHeader(body),
+                sections: [
+                    makeCompactRepoInfo(body),
+                    makeIssueEventInfo(body)
+                ]
+            }
+        ]
+   }
+   return async (url: string) => {
+       const res = await fetch(url, {
+           method: 'POST',
+           headers: {
+               'Content-Type': 'application/json; charset=UTF-8'
+           },
+           body: JSON.stringify(msg)
+       });
+       return res;
+   }
+}

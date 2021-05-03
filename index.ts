@@ -22,6 +22,9 @@ app.post('/', async (req, res)=>{
             case "pull_request":
                 sendMessage = msg.generatePRMessage(req.body)
                 break;
+            case "issues":
+                sendMessage = msg.generateIssueMessage(req.body)
+                break;
             default:
                 sendMessage = msg.generateDefaultMessage(req.body, event)
                 break;
