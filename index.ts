@@ -36,4 +36,6 @@ app.post('/', async (req, res)=>{
     }
 })
 
+app.get('/', (_, res)=>res.redirect("https://github.com/one23four56/github-to-google-chat"))
+
 app.listen(8000)
