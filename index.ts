@@ -22,6 +22,9 @@ app.post('/', async (req, res)=>{
             case "pull_request":
                 sendMessage = msg.generatePRMessage(req.body)
                 break;
+            case "issues":
+                sendMessage = msg.generateIssueMessage(req.body)
+                break;
             default:
                 sendMessage = msg.generateDefaultMessage(req.body, event)
                 break;
@@ -32,5 +35,7 @@ app.post('/', async (req, res)=>{
         res.status(400).send(`Bad Request: ${error}`)
     }
 })
+
+app.get('/', (_, res)=>res.redirect("https://github.com/one23four56/github-to-google-chat"))
 
 app.listen(8000)
