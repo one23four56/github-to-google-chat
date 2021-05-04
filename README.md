@@ -2,6 +2,10 @@
 
 Sends github updates to google chat. Written in TypeScript, powered by Nodejs.
 
+## Setup 
+
+See [here](https://github.com/one23four56/github-to-google-chat/blob/master/setup.md).
+
 ## Supported Events
 
 Currently, only some events have a custom message format. These events are: 
